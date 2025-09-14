@@ -3,31 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <title>時計</title>
-  <!-- MDL -->
-  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
-  <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
   <style>
     body {
+      margin: 0;
+      padding: 0;
       background: #F2F2F2;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      margin: 0;
     }
-    .mdl-card {
-      width: 95%;
-      max-width: 500px;
-      padding: 16px;
-      text-align: center;
+    .container {
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
     }
-    canvas {
-      width: 100%;
-      height: auto;
+    #clockCanvas {
+      display: block;
+      max-width: 100vw;
+      max-height: 80vh; /* デジタル時計用に下部スペース確保 */
     }
     #digitalClock {
-      margin-top: 12px;
-      font-size: 2.4em;
+      margin-top: 8px;
+      font-size: 4.8em;
+      text-align: center;
     }
     #digitalClock rt {
       font-size: 0.6em;
@@ -35,18 +38,28 @@
   </style>
 </head>
 <body>
-  <div class="mdl-card mdl-shadow--4dp">
-    <canvas id="clockCanvas" width="400" height="400"></canvas>
+  <div class="container">
+    <canvas id="clockCanvas"></canvas>
     <div id="digitalClock"></div>
   </div>
 
   <script>
     const canvas = document.getElementById("clockCanvas");
     const ctx = canvas.getContext("2d");
-    const radius = canvas.height / 2;
-    ctx.translate(radius, radius);
+
+    function resizeCanvas() {
+      // 画面の短辺に合わせて正方形を確保（高さは80%）
+      const size = Math.min(window.innerWidth, window.innerHeight * 0.8);
+      canvas.width = size;
+      canvas.height = size;
+    }
 
     function drawClock() {
+      resizeCanvas();
+      const radius = canvas.height / 2;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
+      ctx.translate(radius, radius);
+
       ctx.clearRect(-radius, -radius, canvas.width, canvas.height);
       drawFace(ctx, radius);
       drawNumbers(ctx, radius);
@@ -93,17 +106,16 @@
       let second = now.getSeconds();
 
       // 時針（赤）
-      hour = hour % 12;
-      hour = (hour * Math.PI) / 6 + (minute * Math.PI) / (6 * 60);
-      drawHand(ctx, hour, radius * 0.5, radius * 0.07, "#C62828");
+      let hourPos = (hour % 12) * Math.PI / 6 + (minute * Math.PI) / (6 * 60);
+      drawHand(ctx, hourPos, radius * 0.5, radius * 0.07, "#C62828");
 
       // 分針（青）
-      minute = (minute * Math.PI) / 30 + (second * Math.PI) / (30 * 60);
-      drawHand(ctx, minute, radius * 0.7, radius * 0.05, "#1565C0");
+      let minutePos = (minute * Math.PI) / 30 + (second * Math.PI) / (30 * 60);
+      drawHand(ctx, minutePos, radius * 0.7, radius * 0.05, "#1565C0");
 
-      // 秒針（水色 #42A5F5）
-      second = (second * Math.PI) / 30;
-      drawHand(ctx, second, radius * 0.8, radius * 0.02, "#42A5F5");
+      // 秒針（水色）
+      let secondPos = (second * Math.PI) / 30;
+      drawHand(ctx, secondPos, radius * 0.8, radius * 0.02, "#42A5F5");
     }
 
     function drawHand(ctx, pos, length, width, color) {
@@ -122,7 +134,7 @@
       let minute = now.getMinutes();
       let second = now.getSeconds();
 
-      // 12時間表記に変換
+      // 12時間表記
       let displayHour = hour % 12;
       if (displayHour === 0) displayHour = 12;
 
@@ -136,6 +148,7 @@
 
     setInterval(drawClock, 1000);
     drawClock();
+    window.addEventListener("resize", drawClock);
   </script>
 </body>
 </html>

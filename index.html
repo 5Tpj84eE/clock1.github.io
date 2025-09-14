@@ -25,11 +25,19 @@
       width: 100%;
       height: auto;
     }
+    #digitalClock {
+      margin-top: 12px;
+      font-size: 2.4em;
+    }
+    #digitalClock rt {
+      font-size: 0.6em;
+    }
   </style>
 </head>
 <body>
   <div class="mdl-card mdl-shadow--4dp">
     <canvas id="clockCanvas" width="400" height="400"></canvas>
+    <div id="digitalClock"></div>
   </div>
 
   <script>
@@ -43,6 +51,7 @@
       drawFace(ctx, radius);
       drawNumbers(ctx, radius);
       drawTime(ctx, radius);
+      updateDigitalClock();
     }
 
     function drawFace(ctx, radius) {
@@ -105,6 +114,24 @@
       ctx.moveTo(0, 0);
       ctx.lineTo(length * Math.sin(pos), -length * Math.cos(pos));
       ctx.stroke();
+    }
+
+    function updateDigitalClock() {
+      const now = new Date();
+      let hour = now.getHours();
+      let minute = now.getMinutes();
+      let second = now.getSeconds();
+
+      // 12時間表記に変換
+      let displayHour = hour % 12;
+      if (displayHour === 0) displayHour = 12;
+
+      const digital = `
+        ${displayHour}<ruby>時<rt>じ</rt></ruby>
+        ${minute}<ruby>分<rt>ふん</rt></ruby>
+        ${second}<ruby>秒<rt>びょう</rt></ruby>
+      `;
+      document.getElementById("digitalClock").innerHTML = digital;
     }
 
     setInterval(drawClock, 1000);
